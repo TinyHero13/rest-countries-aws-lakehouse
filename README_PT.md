@@ -2,7 +2,7 @@
 Este projeto consiste em um script Python que extrai dados de paises da API Rest Countries, joga no AWS S3 que serve como LakeHouse e utiliza o AWS Glue para catalogar os dados e por fim utiliza o Athena para fazer consultas no S3 pelo catálogo do Glue.
 
 ## Arquitetura do projeto
-![arquitetura do projeto](imgs/img1.png)
+![arquitetura do projeto](imgs/arq.png)
 
 ## Funcionalidades
 
