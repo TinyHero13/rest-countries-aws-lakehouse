@@ -1,5 +1,6 @@
 import requests
 import boto3
+import json
 
 # AWS
 region = 'us-east-1'
@@ -38,6 +39,22 @@ def create_glue_database():
     except Exception as e:
         print(f'Erro em criar o banco de dados do glue: {e}')
 
+def upload_to_S3(country):
+    try:
+        country_json = convert_to_json(country)
+        filename = 'raw-data/country.json'
+
+        s3_client.put_object(
+            Bucket = bucket_name,
+            Key = filename,
+            Body = country_json
+        )
+
+        print(f'O arquivo {filename} foi inserido no bucket do s3')
+    
+    except Exception as e:
+        print(f'Ocorreu um erro {e}')
+
 def fetch_api():
     try:
         response = requests.get(API_URL)
@@ -48,11 +65,14 @@ def fetch_api():
     except Exception as e:
         print(f'Erro na requisição da API {e}')
 
+def convert_to_json(data):
+    return "\n".join([json.dumps(record) for record in data])
 
 def main():
     create_s3_bucket()
     create_glue_database()
 
-    fetch_api()
+    country = fetch_api()
+    upload_to_S3(country)
 
 main()
