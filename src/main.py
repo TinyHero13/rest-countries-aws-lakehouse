@@ -1,6 +1,10 @@
 import requests
 import boto3
 import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # AWS
 region = 'us-east-1'
@@ -39,10 +43,23 @@ def create_glue_database():
     except Exception as e:
         print(f'Erro em criar o banco de dados do glue: {e}')
 
-def upload_to_S3(country):
+def create_glue_crawler(s3_target_path):
+    try:
+        crawler_name = 'country-crawler'
+        glue_client.create_crawler(
+            Name = 'country-crawler',
+            Role = os.get_env('GLUE_CRAWLER_ROLE_ARN'),
+            DatabaseName = glue_db_name,
+             Targets={'S3Targets': [{'Path': s3_target_path}]}
+        )
+
+        print(f'O crawler {crawler_name} criado com sucesso ')
+    except Exception as e:
+        print(f'Ocorreu um erro: {e}')
+
+def upload_to_S3(country, filename):
     try:
         country_json = convert_to_json(country)
-        filename = 'raw-data/country.json'
 
         s3_client.put_object(
             Bucket = bucket_name,
@@ -69,10 +86,18 @@ def convert_to_json(data):
     return "\n".join([json.dumps(record) for record in data])
 
 def main():
+    folder = 'raw-data/'       
+    filename = 'country.json'
+    full_file = folder+filename
+
+    s3_target_path = f"s3://{bucket_name}/{folder}"
+
     create_s3_bucket()
     create_glue_database()
 
     country = fetch_api()
-    upload_to_S3(country)
+    upload_to_S3(country, full_file)
+
+    create_glue_crawler(s3_target_path)
 
 main()
