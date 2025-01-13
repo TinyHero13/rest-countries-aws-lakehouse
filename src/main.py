@@ -96,8 +96,12 @@ def query_athena(folder):
     query_execution_id = response['QueryExecutionId']
     print(f'Query {query_execution_id} começou a executar')
 
-    while athena_client.get_query_execution(QueryExecutionId=query_execution_id)['QueryExecution']['Status']['State'] != 'SUCCEEDED':
+    while athena_client.get_query_execution(QueryExecutionId=query_execution_id)['QueryExecution']['Status']['State'] not in ['SUCCEEDED', 'FAILED']:
         time.sleep(5)
+
+    if athena_client.get_query_execution(QueryExecutionId=query_execution_id)['QueryExecution']['Status']['State'] == 'FAILED':
+        print(f'Ocorreu um erro ao consultar os dados no Athena')
+        return None
 
     results = athena_client.get_query_results(QueryExecutionId=query_execution_id)
 
@@ -119,9 +123,9 @@ def convert_to_json(data):
 def main():
     folder = 'raw-data'       
     filename = 'country.json'
-    full_file = folder+filename+'/'
+    full_file = folder+'/'+filename
 
-    s3_target_path = f"s3://{bucket_name}/{folder}"
+    s3_target_path = f"s3://{bucket_name}/{folder}/"
 
     crawler_name = 'country-crawler'
 
