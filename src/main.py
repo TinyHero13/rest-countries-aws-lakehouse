@@ -121,7 +121,7 @@ def convert_to_json(data):
     return "\n".join([json.dumps(record) for record in data])
 
 def main():
-    folder = 'raw-data'       
+    folder = 'raw_data'     
     filename = 'country.json'
     full_file = folder+'/'+filename
 
